@@ -2,27 +2,41 @@
 
 Complete setup guide for running Mailcow in Proxmox with Nginx reverse proxy to handle all mail services through a single public IP with minimal port forwarding.
 
+## 🚀 Quick Start
+
+**Already have Nginx running?** (e.g., at 192.168.0.9)
+→ **See [QUICK_START.md](QUICK_START.md)** for simplified setup!
+
+**Starting from scratch?**
+→ Continue reading this guide for full deployment.
+
 ## Overview
 
 This setup allows you to run Mailcow mail server behind an Nginx reverse proxy, solving the problem of router port forwarding limitations. All mail services (SMTP, IMAP, POP3, Web UI) are proxied through a single server.
 
-### Architecture
+### Architecture Options
 
+#### Option 1: Existing Nginx Server (Recommended if you have one)
 ```
-Internet
-    |
-    v
-[Router] - Forward ports to Nginx Proxy VM
-    |
-    v
-[Nginx Proxy VM] - Reverse proxy for all services
-    |
-    v
-[Mailcow VM] - Mail server backend
+Internet → Router → [Existing Nginx 192.168.0.9] → [Mailcow VM]
 ```
+**Use**: `add-mailcow-to-nginx.sh` on your existing Nginx server
+
+#### Option 2: Fresh Nginx Installation
+```
+Internet → Router → [New Nginx Proxy VM] → [Mailcow VM]
+```
+**Use**: `install-nginx-proxy.sh` to set up new Nginx proxy
 
 ## Prerequisites
 
+### For Existing Nginx Setup (Option 1)
+- **Existing Nginx server**: Already running and accessible
+- **New Mailcow VM**: 6GB RAM minimum, 20GB+ disk (Ubuntu/Debian)
+- Domain name with DNS control
+- Router admin access (to forward mail ports)
+
+### For Fresh Installation (Option 2)
 - Proxmox server with at least 2 VMs:
   - **Nginx Proxy VM**: 1GB RAM, 10GB disk (Ubuntu/Debian)
   - **Mailcow VM**: 6GB RAM minimum, 20GB+ disk (Ubuntu/Debian)
@@ -196,12 +210,27 @@ openssl s_client -connect mail.example.com:993
 
 ```
 .
+├── QUICK_START.md              # Quick setup guide for existing Nginx installations
+├── README.md                   # Complete documentation (this file)
 ├── install-mailcow.sh          # Mailcow installation script (run on mail VM)
-├── install-nginx-proxy.sh      # Nginx proxy setup script (run on proxy VM)
+├── add-mailcow-to-nginx.sh     # Add to existing Nginx (Option 1)
+├── install-nginx-proxy.sh      # New Nginx proxy setup (Option 2)
 ├── nginx-mailcow.conf          # Nginx HTTP/HTTPS config template
 ├── nginx-stream.conf           # Nginx stream config template
-└── README.md                   # This file
+└── verify-setup.sh             # Setup verification tool
 ```
+
+### Which Files To Use
+
+**If you have existing Nginx (192.168.0.9)**:
+1. `install-mailcow.sh` - Run on new Mailcow VM
+2. `add-mailcow-to-nginx.sh` - Run on existing Nginx server
+3. `verify-setup.sh` - Run to verify everything works
+
+**If you're starting fresh**:
+1. `install-mailcow.sh` - Run on Mailcow VM
+2. `install-nginx-proxy.sh` - Run on new Nginx proxy VM
+3. `verify-setup.sh` - Run to verify everything works
 
 ## Configuration Files
 
